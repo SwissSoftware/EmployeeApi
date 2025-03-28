@@ -1,0 +1,23 @@
+openapi: 3.0.1
+info:
+  title: Emp
+  description: API Definition of Emp
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/emp
+paths:
+  /all:
+    get:
+      responses:
+        default:
+          description: Default response
+  /women:
+    get:
+      responses:
+        default:
+          description: Default response
+  /men:
+    get:
+      responses:
+        default:
+          description: Default response

@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: Emp
   description: API Definition of Emp
-  version: 1.0.0
+  version: 1.0.2
 servers:
 - url: http://localhost:8290/emp
 paths:

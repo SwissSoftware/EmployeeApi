@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api name="Emp" context="/emp" version="1.0.3" version-type="context"
+     xmlns="http://ws.apache.org/ns/synapse">
+
+    <!-- Existing endpoints with enhanced logging -->
+    <resource methods="GET" url-mapping="/all">
+        <inSequence>
+            <!-- log transport headers -->
+            <log level="custom">
+                <property name="TransportHeaders" expression="get-property('transport','HTTP_HEADERS')"/>
+            </log>
+            <!-- log incoming message payload -->
+            <log level="custom">
+                <property name="RequestPayload" expression="get-property('axis2','REST_JSON_PAYLOAD')"/>
+            </log>
+
+            <payloadFactory media-type="json">
+                <format>{ "employees": [ { "id": 1, "name": "Alice", "dob": "1985-03-14", "ssn":
+                    "123-45-6789", "address": { "street": "123 Main St", "city": "Anytown", "state":
+                    "CA", "postalCode": "90001" }, "email": "alice@example.com", "phone":
+                    "555-1234", "jobTitle": "Software Engineer", "salary": 120000, "bankAccount":
+                    "XXXXXX1234", "passportNumber": "X1234567", "maritalStatus": "Single",
+                    "emergencyContact": { "name": "John Doe", "relation": "Brother", "phone":
+                    "555-5678" } }, { "id": 2, "name": "Bob", "dob": "1979-07-22", "ssn":
+                    "987-65-4321", "address": { "street": "456 Oak St", "city": "Othertown",
+                    "state": "NY", "postalCode": "10001" }, "email": "bob@example.com", "phone":
+                    "555-2345", "jobTitle": "Data Analyst", "salary": 90000, "bankAccount":
+                    "XXXXXX2345", "passportNumber": "Y2345678", "maritalStatus": "Married",
+                    "emergencyContact": { "name": "Jane Doe", "relation": "Wife", "phone":
+                    "555-6789" } }, { "id": 3, "name": "Charlie", "dob": "1990-11-30", "ssn":
+                    "111-22-3333", "address": { "street": "789 Pine St", "city": "Elsewhere",
+                    "state": "TX", "postalCode": "75001" }, "email": "charlie@example.com", "phone":
+                    "555-3456", "jobTitle": "Product Manager", "salary": 110000, "bankAccount":
+                    "XXXXXX3456", "passportNumber": "Z3456789", "maritalStatus": "Single",
+                    "emergencyContact": { "name": "Sam Smith", "relation": "Parent", "phone":
+                    "555-7890" } }, { "id": 4, "name": "David", "dob": "1988-05-10", "ssn":
+                    "222-33-4444", "address": { "street": "321 Elm St", "city": "Smalltown",
+                    "state": "FL", "postalCode": "32003" }, "email": "david@example.com", "phone":
+                    "555-4567", "jobTitle": "HR Manager", "salary": 95000, "bankAccount":
+                    "XXXXXX4567", "passportNumber": "A4567890", "maritalStatus": "Married",
+                    "emergencyContact": { "name": "Lily Brown", "relation": "Spouse", "phone":
+                    "555-8901" } }, { "id": 5, "name": "Eva", "dob": "1992-09-18", "ssn":
+                    "333-44-5555", "address": { "street": "654 Cedar St", "city": "Big City",
+                    "state": "IL", "postalCode": "60007" }, "email": "eva@example.com", "phone":
+                    "555-5678", "jobTitle": "Marketing Specialist", "salary": 85000, "bankAccount":
+                    "XXXXXX5678", "passportNumber": "B5678901", "maritalStatus": "Single",
+                    "emergencyContact": { "name": "Paul White", "relation": "Friend", "phone":
+                    "555-9012" } } ] } </format>
+            </payloadFactory>
+            <!-- log payloadFactory output -->
+            <log level="simple">
+                <property name="GeneratedPayload" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <!-- log full response -->
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <resource methods="GET" url-mapping="/women">
+        <inSequence>
+            <!-- log transport headers and query params -->
+            <log level="custom">
+                <property name="TransportHeaders" expression="get-property('transport','HTTP_HEADERS')"/>
+                <property name="QueryParams" expression="get-property('transport','QUERY_STRING')"/>
+            </log>
+            <!-- log incoming JSON (if any) -->
+            <log level="custom">
+                <property name="RequestPayload" expression="get-property('axis2','REST_JSON_PAYLOAD')"/>
+            </log>
+
+            <payloadFactory media-type="json">
+                <format>{"employees": [{"id":1,"name":"Alice"},{"id":5,"name":"Eva"}]}</format>
+            </payloadFactory>
+            <!-- log partial result -->
+            <log level="simple">
+                <property name="WomenList" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <!-- log outgoing headers -->
+            <log level="custom">
+                <property name="ResponseHeaders" expression="get-property('transport','HTTP_HEADERS')"/>
+            </log>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <resource methods="GET" url-mapping="/men">
+        <inSequence>
+            <!-- log transport headers -->
+            <log level="custom">
+                <property name="TransportHeaders" expression="get-property('transport','HTTP_HEADERS')"/>
+            </log>
+            <!-- log request context -->
+            <log level="custom">
+                <property name="RequestContext" expression="get-property('REST_SUB_REQUEST_PATH')"/>
+            </log>
+
+            <payloadFactory media-type="json">
+                <format>{"employees":[{"id":2,"name":"Bob"},{"id":3,"name":"Charlie"},{"id":4,"name":"David"}]}</format>
+            </payloadFactory>
+            <!-- log generated men list -->
+            <log level="simple">
+                <property name="MenList" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <!-- log full out message -->
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API1: Broken Object Level Authorization -->
+    <resource methods="GET" url-mapping="/employees/{employeeId}">
+        <inSequence>
+            <log level="custom">
+                <property name="AuthHeader" expression="get-property('transport','Authorization')"/>
+                <property name="RequestedID" expression="get-property('uri.var.employeeId')"/>
+            </log>
+            <!-- authorization check stub -->
+            <filter source="get-property('uri.var.employeeId')" regex="\d+">
+                <then>
+                    <log level="simple">
+                        <property name="AccessGranted" value="true"/>
+                    </log>
+                    <payloadFactory media-type="json">
+                        <format>{"id":$1,"name":"Employee $1","email":"e$1@example.com","ssn":"XXX-XX-000$1","salary":50000}</format>
+                    </payloadFactory>
+                    <log level="simple">
+                        <property name="EmployeePayload" expression="get-property('body')"/>
+                    </log>
+                </then>
+                <else>
+                    <log level="simple">
+                        <property name="AccessGranted" value="false"/>
+                    </log>
+                    <payloadFactory media-type="json">
+                        <format>{"error":"Forbidden"}</format>
+                    </payloadFactory>
+                    <property name="HTTP_SC" value="403" scope="axis2" />
+                    <respond/>
+                </else>
+            </filter>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API2: Broken Authentication -->
+    <resource methods="POST" url-mapping="/login">
+        <inSequence>
+            <log level="custom">
+                <property name="RequestBody" expression="get-property('axis2','REST_JSON_PAYLOAD')"/>
+            </log>
+            <!-- stub login logic -->
+            <payloadFactory media-type="json">
+                <format>{"token":"eyJhbGciOiJI..."}</format>
+            </payloadFactory>
+            <log level="simple">
+                <property name="GeneratedToken" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <property name="HTTP_SC" value="200" scope="axis2" />
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API3: Excessive Data Exposure -->
+    <resource methods="GET" url-mapping="/employees">
+        <inSequence>
+            <log level="custom">
+                <property name="EndpointAccessed" value="/employees"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>[{"id":1,"name":"Alice"},{"id":2,"name":"Bob"}]</format>
+            </payloadFactory>
+            <log level="simple">
+                <property name="PublicEmployees" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <resource methods="GET" url-mapping="/employees/full">
+        <inSequence>
+            <log level="custom">
+                <property name="AuthHeader" expression="get-property('transport','Authorization')"/>
+                <property name="EndpointAccessed" value="/employees/full"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>[{"id":1,"name":"Alice","email":"a@example.com","ssn":"123-45-6789","salary":70000},
+                          {"id":2,"name":"Bob","email":"b@example.com","ssn":"987-65-4321","salary":65000}]</format>
+            </payloadFactory>
+            <log level="simple">
+                <property name="FullEmployees" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API4: Lack of Rate Limiting -->
+    <resource methods="GET" url-mapping="/reports">
+        <inSequence>
+            <log level="full"/>
+            <!-- stub heavy report -->
+            <payloadFactory media-type="text">
+                <format>JVBERi0xLjQKJ...</format>
+            </payloadFactory>
+            <log level="simple">
+                <property name="ReportSize" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <property name="HTTP_SC" value="200" scope="axis2" />
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API5: Broken Function Level Authorization -->
+    <resource methods="POST" url-mapping="/admin/users">
+        <inSequence>
+            <log level="custom">
+                <property name="AuthHeader" expression="get-property('transport','Authorization')"/>
+                <property name="RequestBody" expression="get-property('axis2','REST_JSON_PAYLOAD')"/>
+            </log>
+            <!-- stub admin check -->
+            <payloadFactory media-type="json">
+                <format>{"status":"User created"}</format>
+            </payloadFactory>
+            <log level="simple">
+                <property name="CreationStatus" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <property name="HTTP_SC" value="201" scope="axis2" />
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API6: Unrestricted Resource Consumption -->
+    <resource methods="POST" url-mapping="/upload/resume">
+        <inSequence>
+            <log level="custom">
+                <property name="FileSize" expression="get-property('axis2','AttachmentContentLength')"/>
+                <property name="FileName" expression="get-property('uri.var.file')"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{"status":"File uploaded successfully"}</format>
+            </payloadFactory>
+            <log level="simple">
+                <property name="UploadResponse" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API7: Improper Cryptography -->
+    <resource methods="POST" url-mapping="/encrypt">
+        <inSequence>
+            <log level="custom">
+                <property name="Payload" expression="get-property('axis2','REST_JSON_PAYLOAD')"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{"cipherText":"abc123cipher"}</format>
+            </payloadFactory>
+            <log level="simple">
+                <property name="CipherOutput" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API8: Injection -->
+    <resource methods="GET" url-mapping="/search">
+        <inSequence>
+            <log level="custom">
+                <property name="QueryParam" expression="get-property('uri.var.name')"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>[{"id":10,"name":"$1"}]</format>
+                <args>
+                    <arg evaluator="xml" expression="get-property('uri.var.name')"/>
+                </args>
+            </payloadFactory>
+            <log level="simple">
+                <property name="SearchResult" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API9: Security Misconfiguration -->
+    <resource methods="GET" url-mapping="/config">
+        <inSequence>
+            <log level="custom">
+                <property name="EndpointAccessed" value="/config"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{"JAVA_HOME":"/usr/lib/java","DB_PASSWORD":"secret"}</format>
+            </payloadFactory>
+            <log level="simple">
+                <property name="ConfigDump" expression="get-property('body')"/>
+            </log>
+            <loopback/>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+    <!-- API10: SSRF -->
+    <resource methods="GET" url-mapping="/proxy">
+        <inSequence>
+            <log level="custom">
+                <property name="TargetURL" expression="get-property('uri.var.url')"/>
+            </log>
+            <!-- outbound call to user-specified URL -->
+            <send>
+                <endpoint>
+                    <http method="post" trace="disable" uri-template="{uri.var.url}" />
+                </endpoint>
+            </send>
+        </inSequence>
+        <outSequence>
+            <log level="full"/>
+            <respond/>
+        </outSequence>
+    </resource>
+
+</api>

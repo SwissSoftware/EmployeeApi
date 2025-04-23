@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.letsboot.apisec.microintegrator</groupId>
   <artifactId>EmployeeApi</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.4</version>
   <packaging>pom</packaging>
   <name>EmployeeApi</name>
   <description>EmployeeApi</description>

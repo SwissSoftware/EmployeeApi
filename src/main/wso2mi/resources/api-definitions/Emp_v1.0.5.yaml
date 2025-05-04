@@ -1,174 +1,453 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
-  title: Emp
-  description: API Definition of Emp
-  version: 1.0.5
+  title: apisec
+  version: "1.0.5"
+  description: |
+    This API simulates endpoints mapped to the OWASP API Security Top 10, plus additional employee-related endpoints.
+    It is intended for security labs and testing.
+
 servers:
-- url: http://localhost:8290/apisec
+  - url: /apisec
+
 paths:
   /emp/all:
     get:
+      summary: Get all employees
       responses:
-        default:
-          description: Default response
+        '200':
+          description: List of all employees
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employees:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                employees:
+                  - id: 1
+                    name: Alice
+                  - id: 2
+                    name: Bob
+
   /emp/women:
     get:
+      summary: Get all women employees
       responses:
-        default:
-          description: Default response
+        '200':
+          description: List of women employees
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employees:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                employees:
+                  - id: 1
+                    name: Alice
+                  - id: 5
+                    name: Eva
+
   /emp/men:
     get:
+      summary: Get all men employees
       responses:
-        default:
-          description: Default response
+        '200':
+          description: List of men employees
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  employees:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+              example:
+                employees:
+                  - id: 2
+                    name: Bob
+                  - id: 3
+                    name: Charlie
+
   /employees/{employeeId}:
     get:
+      summary: Get specific employee (Broken Object Level Authorization)
       parameters:
-      - name: employeeId
-        in: path
-        required: true
-        schema:
-          type: string
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          schema:
+            type: string
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Employee details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
+              example:
+                id: 1
+                name: Employee 1
+                email: e1@example.com
+        '403':
+          description: Forbidden
+
   /login:
     post:
+      summary: Login (Broken Authentication)
       requestBody:
-        description: Sample Payload
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                payload:
-                  type: object
-          application/xml:
-            schema:
-              type: object
-              xml:
-                name: payload
-        required: false
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+            example:
+              username: admin
+              password: admin
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Auth token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+              example:
+                token: eyJhbGciOiJI...
+
   /employees:
     get:
+      summary: Public employee list (Excessive Data Exposure)
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Public employee data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+              example:
+                - id: 1
+                  name: Alice
+                - id: 2
+                  name: Bob
+
   /employees/full:
     get:
+      summary: Full employee list (Excessive Data Exposure)
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Full sensitive employee data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    ssn:
+                      type: string
+                    salary:
+                      type: integer
+              example:
+                - id: 1
+                  name: Alice
+                  email: a@example.com
+                  ssn: 123-45-6789
+                  salary: 70000
+
   /reports:
     get:
+      summary: Download large report (Lack of Rate Limiting)
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Binary report data
+          content:
+            text/plain:
+              schema:
+                type: string
+
   /admin/users:
     post:
+      summary: Create a new user (Broken Function Level Authorization)
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
       requestBody:
-        description: Sample Payload
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                payload:
-                  type: object
-          application/xml:
-            schema:
-              type: object
-              xml:
-                name: payload
-        required: false
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+            example:
+              username: newuser
+              password: Pass123
       responses:
-        default:
-          description: Default response
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: User created
+
   /upload/resume:
     post:
+      summary: Upload resume file (Unrestricted Resource Consumption)
       requestBody:
-        description: Sample Payload
+        required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
-                payload:
-                  type: object
-          application/xml:
-            schema:
-              type: object
-              xml:
-                name: payload
-        required: false
+                file:
+                  type: string
+                  format: binary
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Upload success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: File uploaded successfully
+
   /encrypt:
     post:
+      summary: Encrypt data (Improper Cryptography)
       requestBody:
-        description: Sample Payload
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                payload:
-                  type: object
-          application/xml:
-            schema:
-              type: object
-              xml:
-                name: payload
-        required: false
+                plaintext:
+                  type: string
+              required:
+                - plaintext
+            example:
+              plaintext: Hello world
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Encrypted data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cipherText:
+                    type: string
+              example:
+                cipherText: abc123cipher
+
   /search:
     get:
+      summary: Search for employees (Injection risk)
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Search result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+              example:
+                - id: 10
+                  name: "Alice"
+
   /proxy:
     get:
+      summary: Proxy to external URL (SSRF)
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Proxied response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+
   /debug-info:
     get:
+      summary: Debug info (Security Misconfiguration)
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Debug data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  debug:
+                    type: boolean
+                  db_password:
+                    type: string
+              example:
+                debug: true
+                db_password: supersecret
+
   /config:
     get:
+      summary: System configuration (Security Misconfiguration)
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Config info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  JAVA_HOME:
+                    type: string
+                  DB_PASSWORD:
+                    type: string
+              example:
+                JAVA_HOME: /usr/lib/java
+                DB_PASSWORD: secret
+
   /internal-endpoints:
     get:
+      summary: List internal API endpoints (Improper Inventory Management)
       responses:
-        default:
-          description: Default response
+        '200':
+          description: List of internal endpoints
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  internal_apis:
+                    type: array
+                    items:
+                      type: string
+              example:
+                internal_apis:
+                  - /internal/status
+                  - /internal/db-stats
+
   /third-party/integration:
     post:
+      summary: Submit data to third-party (Unsafe Consumption of APIs)
       requestBody:
-        description: Sample Payload
+        required: true
         content:
           application/json:
             schema:
               type: object
               properties:
-                payload:
-                  type: object
-          application/xml:
-            schema:
-              type: object
-              xml:
-                name: payload
-        required: false
+                data:
+                  type: string
+              required:
+                - data
+            example:
+              data: third-party input
       responses:
-        default:
-          description: Default response
+        '200':
+          description: Submission status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+              example:
+                status: Data accepted without validation

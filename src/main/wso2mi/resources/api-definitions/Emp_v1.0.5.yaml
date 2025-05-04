@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Employee & Security Demo API
+  title: apisec
   version: "1.0.5"
   description: |
     This API simulates endpoints mapped to the OWASP API Security Top 10, plus additional employee-related endpoints.
@@ -18,13 +18,24 @@ paths:
           description: List of all employees
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  employees:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
               example:
                 employees:
                   - id: 1
                     name: Alice
                   - id: 2
                     name: Bob
-                  # ...and so on
 
   /emp/women:
     get:
@@ -34,6 +45,18 @@ paths:
           description: List of women employees
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  employees:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
               example:
                 employees:
                   - id: 1
@@ -49,6 +72,18 @@ paths:
           description: List of men employees
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  employees:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
               example:
                 employees:
                   - id: 2
@@ -74,6 +109,15 @@ paths:
           description: Employee details
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  name:
+                    type: string
+                  email:
+                    type: string
               example:
                 id: 1
                 name: Employee 1
@@ -88,6 +132,16 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
             example:
               username: admin
               password: admin
@@ -96,6 +150,11 @@ paths:
           description: Auth token
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
               example:
                 token: eyJhbGciOiJI...
 
@@ -107,6 +166,15 @@ paths:
           description: Public employee data
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
               example:
                 - id: 1
                   name: Alice
@@ -126,6 +194,21 @@ paths:
           description: Full sensitive employee data
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    email:
+                      type: string
+                    ssn:
+                      type: string
+                    salary:
+                      type: integer
               example:
                 - id: 1
                   name: Alice
@@ -156,6 +239,16 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
             example:
               username: newuser
               password: Pass123
@@ -164,6 +257,11 @@ paths:
           description: User created
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
               example:
                 status: User created
 
@@ -185,6 +283,11 @@ paths:
           description: Upload success
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
               example:
                 status: File uploaded successfully
 
@@ -195,13 +298,25 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              type: object
+              properties:
+                plaintext:
+                  type: string
+              required:
+                - plaintext
             example:
-              plaintext: "Hello world"
+              plaintext: Hello world
       responses:
         '200':
           description: Encrypted data
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  cipherText:
+                    type: string
               example:
                 cipherText: abc123cipher
 
@@ -219,6 +334,15 @@ paths:
           description: Search result
           content:
             application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
               example:
                 - id: 10
                   name: "Alice"
@@ -235,6 +359,11 @@ paths:
       responses:
         '200':
           description: Proxied response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
 
   /debug-info:
     get:
@@ -244,6 +373,13 @@ paths:
           description: Debug data
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  debug:
+                    type: boolean
+                  db_password:
+                    type: string
               example:
                 debug: true
                 db_password: supersecret
@@ -256,6 +392,13 @@ paths:
           description: Config info
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  JAVA_HOME:
+                    type: string
+                  DB_PASSWORD:
+                    type: string
               example:
                 JAVA_HOME: /usr/lib/java
                 DB_PASSWORD: secret
@@ -268,6 +411,13 @@ paths:
           description: List of internal endpoints
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  internal_apis:
+                    type: array
+                    items:
+                      type: string
               example:
                 internal_apis:
                   - /internal/status
@@ -280,6 +430,13 @@ paths:
         required: true
         content:
           application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: string
+              required:
+                - data
             example:
               data: third-party input
       responses:
@@ -287,5 +444,10 @@ paths:
           description: Submission status
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
               example:
                 status: Data accepted without validation

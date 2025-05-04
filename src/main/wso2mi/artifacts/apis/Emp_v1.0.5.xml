@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<api name="Emp" context="/emp" version="1.0.4" version-type="context"
+<api name="Emp" context="/apisec" version="1.0.5" version-type="context"
      xmlns="http://ws.apache.org/ns/synapse">
 
     <!-- Existing endpoints with enhanced logging -->
-    <resource methods="GET" url-mapping="/all">
+    <resource methods="GET" url-mapping="/emp/all">
         <inSequence>
             <!-- log transport headers -->
             <log level="custom">
@@ -60,7 +60,7 @@
         </outSequence>
     </resource>
 
-    <resource methods="GET" url-mapping="/women">
+    <resource methods="GET" url-mapping="/emp/women">
         <inSequence>
             <!-- log transport headers and query params -->
             <log level="custom">
@@ -90,7 +90,7 @@
         </outSequence>
     </resource>
 
-    <resource methods="GET" url-mapping="/men">
+    <resource methods="GET" url-mapping="/emp/men">
         <inSequence>
             <!-- log transport headers -->
             <log level="custom">
@@ -326,6 +326,41 @@
         </outSequence>
     </resource>
 
+    <!-- APISEC7: SSRF -->
+    <resource methods="GET" url-mapping="/proxy">
+        <inSequence>
+            <property name="targetUrl"
+                    expression="get-property('query.param.url')"
+                    scope="default"/>
+            <log level="custom">
+                <property name="TargetURL" expression="get-property('targetUrl')"/>
+            </log>
+            <send>
+                <endpoint>
+                    <http uri-template="{targetUrl}"/>
+                </endpoint>
+            </send>
+        </inSequence>
+        <outSequence>
+            <respond/>
+        </outSequence>
+    </resource>
+    
+    <!-- APISEC8: Security Misconfiguration -->
+    <resource methods="GET" url-mapping="/debug-info">
+        <inSequence>
+            <log level="custom">
+                <property name="AccessedBy" expression="get-property('transport','RemoteAddr')"/>
+            </log>
+            <payloadFactory media-type="json">
+                <format>{"debug":"true","db_password":"supersecret"}</format>
+            </payloadFactory>
+        </inSequence>
+        <outSequence>
+            <respond/>
+        </outSequence>
+    </resource>
+
     <!-- API9: Security Misconfiguration -->
     <resource methods="GET" url-mapping="/config">
         <inSequence>
@@ -346,23 +381,34 @@
         </outSequence>
     </resource>
 
-    <!-- API10: SSRF -->
-    <resource methods="GET" url-mapping="/proxy">
+    <!-- APISEC9: Improper Inventory Management -->
+    <resource methods="GET" url-mapping="/internal-endpoints">
         <inSequence>
             <log level="custom">
-                <property name="TargetURL" expression="get-property('uri.var.url')"/>
+                <property name="Requester" expression="get-property('transport','RemoteAddr')"/>
             </log>
-            <!-- outbound call to user-specified URL -->
-            <send>
-                <endpoint>
-                    <http method="post" trace="disable" uri-template="{uri.var.url}" />
-                </endpoint>
-            </send>
+            <payloadFactory media-type="json">
+                <format>{"internal_apis":["/internal/status","/internal/db-stats"]}</format>
+            </payloadFactory>
         </inSequence>
         <outSequence>
-            <log level="full"/>
             <respond/>
         </outSequence>
     </resource>
 
+    <!-- APISEC10: Unsafe Consumption of APIs -->
+    <resource methods="POST" url-mapping="/third-party/integration">
+        <inSequence>
+            <log level="custom">
+                <property name="ThirdPartyPayload" expression="get-property('axis2','REST_JSON_PAYLOAD')"/>
+            </log>
+            <!-- No validation: risky -->
+            <payloadFactory media-type="json">
+                <format>{"status":"Data accepted without validation"}</format>
+            </payloadFactory>
+        </inSequence>
+        <outSequence>
+            <respond/>
+        </outSequence>
+    </resource>
 </api>

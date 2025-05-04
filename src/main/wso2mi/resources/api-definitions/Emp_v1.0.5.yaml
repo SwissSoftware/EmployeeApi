@@ -1,0 +1,291 @@
+openapi: 3.0.3
+info:
+  title: Employee & Security Demo API
+  version: "1.0.5"
+  description: |
+    This API simulates endpoints mapped to the OWASP API Security Top 10, plus additional employee-related endpoints.
+    It is intended for security labs and testing.
+
+servers:
+  - url: /apisec
+
+paths:
+  /emp/all:
+    get:
+      summary: Get all employees
+      responses:
+        '200':
+          description: List of all employees
+          content:
+            application/json:
+              example:
+                employees:
+                  - id: 1
+                    name: Alice
+                  - id: 2
+                    name: Bob
+                  # ...and so on
+
+  /emp/women:
+    get:
+      summary: Get all women employees
+      responses:
+        '200':
+          description: List of women employees
+          content:
+            application/json:
+              example:
+                employees:
+                  - id: 1
+                    name: Alice
+                  - id: 5
+                    name: Eva
+
+  /emp/men:
+    get:
+      summary: Get all men employees
+      responses:
+        '200':
+          description: List of men employees
+          content:
+            application/json:
+              example:
+                employees:
+                  - id: 2
+                    name: Bob
+                  - id: 3
+                    name: Charlie
+
+  /employees/{employeeId}:
+    get:
+      summary: Get specific employee (Broken Object Level Authorization)
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Employee details
+          content:
+            application/json:
+              example:
+                id: 1
+                name: Employee 1
+                email: e1@example.com
+        '403':
+          description: Forbidden
+
+  /login:
+    post:
+      summary: Login (Broken Authentication)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              username: admin
+              password: admin
+      responses:
+        '200':
+          description: Auth token
+          content:
+            application/json:
+              example:
+                token: eyJhbGciOiJI...
+
+  /employees:
+    get:
+      summary: Public employee list (Excessive Data Exposure)
+      responses:
+        '200':
+          description: Public employee data
+          content:
+            application/json:
+              example:
+                - id: 1
+                  name: Alice
+                - id: 2
+                  name: Bob
+
+  /employees/full:
+    get:
+      summary: Full employee list (Excessive Data Exposure)
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Full sensitive employee data
+          content:
+            application/json:
+              example:
+                - id: 1
+                  name: Alice
+                  email: a@example.com
+                  ssn: 123-45-6789
+                  salary: 70000
+
+  /reports:
+    get:
+      summary: Download large report (Lack of Rate Limiting)
+      responses:
+        '200':
+          description: Binary report data
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /admin/users:
+    post:
+      summary: Create a new user (Broken Function Level Authorization)
+      parameters:
+        - name: Authorization
+          in: header
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              username: newuser
+              password: Pass123
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              example:
+                status: User created
+
+  /upload/resume:
+    post:
+      summary: Upload resume file (Unrestricted Resource Consumption)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload success
+          content:
+            application/json:
+              example:
+                status: File uploaded successfully
+
+  /encrypt:
+    post:
+      summary: Encrypt data (Improper Cryptography)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              plaintext: "Hello world"
+      responses:
+        '200':
+          description: Encrypted data
+          content:
+            application/json:
+              example:
+                cipherText: abc123cipher
+
+  /search:
+    get:
+      summary: Search for employees (Injection risk)
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search result
+          content:
+            application/json:
+              example:
+                - id: 10
+                  name: "Alice"
+
+  /proxy:
+    get:
+      summary: Proxy to external URL (SSRF)
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proxied response
+
+  /debug-info:
+    get:
+      summary: Debug info (Security Misconfiguration)
+      responses:
+        '200':
+          description: Debug data
+          content:
+            application/json:
+              example:
+                debug: true
+                db_password: supersecret
+
+  /config:
+    get:
+      summary: System configuration (Security Misconfiguration)
+      responses:
+        '200':
+          description: Config info
+          content:
+            application/json:
+              example:
+                JAVA_HOME: /usr/lib/java
+                DB_PASSWORD: secret
+
+  /internal-endpoints:
+    get:
+      summary: List internal API endpoints (Improper Inventory Management)
+      responses:
+        '200':
+          description: List of internal endpoints
+          content:
+            application/json:
+              example:
+                internal_apis:
+                  - /internal/status
+                  - /internal/db-stats
+
+  /third-party/integration:
+    post:
+      summary: Submit data to third-party (Unsafe Consumption of APIs)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              data: third-party input
+      responses:
+        '200':
+          description: Submission status
+          content:
+            application/json:
+              example:
+                status: Data accepted without validation

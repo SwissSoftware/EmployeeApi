@@ -327,20 +327,33 @@
     </resource>
 
     <!-- APISEC7: SSRF -->
+    
     <resource methods="GET" url-mapping="/proxy">
         <inSequence>
-            <property name="targetUrl"
-                    expression="get-property('query.param.url')"
-                    scope="default"/>
-            <log level="custom">
-                <property name="TargetURL" expression="get-property('targetUrl')"/>
-            </log>
-            <send>
-                <endpoint>
-                    <http uri-template="{targetUrl}"/>
-                </endpoint>
-            </send>
-        </inSequence>
+        <!-- Log everything for sanity -->
+
+        <property name="targetUrl"
+          expression="get-property('query.param.url')"
+          scope="default"/>
+
+        <log level="custom">
+            <property name="TEST" value="1"/>
+            <property name="queryParamUrl" expression="get-property('query.param.url')"/>
+            <property name="targetUrl" expression="get-property('targetUrl')"/>
+        </log>
+
+        <!-- Set the Axis2 To header -->
+        <header name="To"
+                expression="get-property('targetUrl')"/>
+
+        <!-- Log the final To header -->
+        <log level="custom">
+            <property name="FinalToHeader" expression="get-property('To')"/>
+        </log>
+
+        <!-- Now send without endpoint -->
+        <send/>
+    </inSequence>
         <outSequence>
             <respond/>
         </outSequence>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<api name="Emp" context="/apisec" version="1.0.5" version-type="context"
+<api name="Emp" context="/apisec" version="1.0.6" version-type="context"
      xmlns="http://ws.apache.org/ns/synapse">
 
     <!-- Existing endpoints with enhanced logging -->

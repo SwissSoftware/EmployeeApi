@@ -6,11 +6,11 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.letsboot.apisec.microintegrator</groupId>
-  <artifactId>EmployeeApi</artifactId>
-  <version>1.0.5</version>
+  <artifactId>APISEC</artifactId>
+  <version>1.0.6</version>
   <packaging>pom</packaging>
-  <name>EmployeeApi</name>
-  <description>EmployeeApi</description>
+  <name>APISEC</name>
+  <description>APISEC</description>
 
   <!-- Repositories omitted for brevity -->
 

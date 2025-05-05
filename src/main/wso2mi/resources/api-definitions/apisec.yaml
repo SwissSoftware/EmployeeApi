@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: apisec
-  version: "1.0.5"
+  version: "1.0.6"
   description: |
     This API simulates endpoints mapped to the OWASP API Security Top 10, plus additional employee-related endpoints.
     It is intended for security labs and testing.

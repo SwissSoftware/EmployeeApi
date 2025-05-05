@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <artifacts>
-  <artifact name="resources_api-definitions_Emp_v1_0_0_yaml" groupId="com.microintegrator.projects" version="1.0.6" type="registry/resource" serverRole="EnterpriseIntegrator">
+  <artifact name="resources_api-definitions_apisec_yaml" groupId="com.microintegrator.projects" version="1.0.6" type="registry/resource" serverRole="EnterpriseIntegrator">
     <item>
       <file>apisec.yaml</file>
       <path>/_system/governance/mi-resources/api-definitions</path>

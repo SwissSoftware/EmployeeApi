@@ -403,6 +403,7 @@
             <payloadFactory media-type="json">
                 <format>{"internal_apis":["/internal/status","/internal/db-stats"]}</format>
             </payloadFactory>
+            <loopback/>
         </inSequence>
         <outSequence>
             <respond/>
@@ -419,6 +420,7 @@
             <payloadFactory media-type="json">
                 <format>{"status":"Data accepted without validation"}</format>
             </payloadFactory>
+            <loopback/>
         </inSequence>
         <outSequence>
             <respond/>

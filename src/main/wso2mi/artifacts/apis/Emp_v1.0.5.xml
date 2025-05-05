@@ -118,43 +118,57 @@
     </resource>
 
     <!-- API1: Broken Object Level Authorization -->
-    <resource methods="GET" url-mapping="/employees/{employeeId}">
+    <resource methods="GET" url-mapping="/employees/*">
         <inSequence>
+            <!-- 1) Pull the ID out of the path -->
+            <property name="employeeId"
+                    expression="fn:substring-after(get-property('REST_SUB_REQUEST_PATH'), '/employees/')"
+                    scope="default"/>
+
+            <!-- 2) Debug -->
             <log level="custom">
-                <property name="AuthHeader" expression="get-property('transport','Authorization')"/>
-                <property name="RequestedID" expression="get-property('uri.var.employeeId')"/>
+            <property name="RequestedID" expression="get-property('employeeId')"/>
             </log>
-            <!-- authorization check stub -->
-            <filter source="get-property('uri.var.employeeId')" regex="\d+">
-                <then>
-                    <log level="simple">
-                        <property name="AccessGranted" value="true"/>
-                    </log>
-                    <payloadFactory media-type="json">
-                        <format>{"id":$1,"name":"Employee $1","email":"e$1@example.com","ssn":"XXX-XX-000$1","salary":50000}</format>
-                    </payloadFactory>
-                    <log level="simple">
-                        <property name="EmployeePayload" expression="get-property('body')"/>
-                    </log>
-                </then>
-                <else>
-                    <log level="simple">
-                        <property name="AccessGranted" value="false"/>
-                    </log>
-                    <payloadFactory media-type="json">
-                        <format>{"error":"Forbidden"}</format>
-                    </payloadFactory>
-                    <property name="HTTP_SC" value="403" scope="axis2" />
-                    <respond/>
-                </else>
+
+            <!-- 3) Check it’s numeric and capture it -->
+            <filter source="get-property('employeeId')" regex="^(\d+)$">
+            <then>
+                <!-- 4) Return the “authorized” stub payload using $1 -->
+                <payloadFactory media-type="json">
+                    <format>
+                        { "id": $1,
+                        "name": "Employee $1",
+                        "email": "e$1@example.com",
+                        "ssn": "XXX-XX-000$1",
+                        "salary": 50000
+                        }
+                    </format>
+                    <args>
+                        <!-- $1 will be replaced by the employeeId property -->
+                        <arg evaluator="xml" expression="get-property('employeeId')"/>
+                    </args>
+                </payloadFactory>
+                <log level="simple">
+                <property name="EmployeePayload" expression="get-property('body')"/>
+                </log>
+                <loopback/>
+            </then>
+            <else>
+                <!-- 5) Deny everything else -->
+                <payloadFactory media-type="json">
+                <format>{"error":"Forbidden"}</format>
+                </payloadFactory>
+                <property name="HTTP_SC" value="403" scope="axis2"/>
+                <respond/>
+            </else>
             </filter>
-            <loopback/>
         </inSequence>
         <outSequence>
             <log level="full"/>
             <respond/>
         </outSequence>
-    </resource>
+        </resource>
+
 
     <!-- API2: Broken Authentication -->
     <resource methods="POST" url-mapping="/login">
